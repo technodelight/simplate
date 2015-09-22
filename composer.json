@@ -1,0 +1,22 @@
+{
+    "name": "technodelight/simplate",
+    "description": "Template management at it's simplest. With PHP/JS libs.",
+    "license": "MIT",
+    "require": {
+        "php": ">=5.4.0"
+    },
+    "require-dev": {
+        "phpspec/phpspec": "^2.3"
+    },
+    "authors": [
+        {
+            "name": "Zsolt Gal",
+            "email": "technodelight@gmail.com"
+        }
+    ],
+    "autoload": {"psr-0": {"Technodelight": "src"}},
+    "config": {
+        "bin-dir": "bin"
+    },
+    "require": {}
+}
