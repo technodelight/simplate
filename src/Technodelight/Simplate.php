@@ -54,7 +54,6 @@ class Simplate
             $idx = strpos($content, '{{ depends');
             if ($idx !== false) {
                 $endIdx = strpos($content, '}}', $idx);
-                $endIdx-= $idx - 10;
 
                 if ($endIdx < 0) {
                     throw new UnexpectedValueException(
@@ -66,11 +65,11 @@ class Simplate
                 }
 
                 // get expression contents
-                $expression = trim(substr($content, $idx + 10, $endIdx));
+                $expression = trim(substr($content, $idx + 10, $endIdx - $idx - 10));
 
                 // get end_depends position
+                // buggy
                 $pos = strpos($content, '{{ end_depends', $endIdx + 2);
-                var_dump($pos);
                 if ($pos < 0) {
                     throw new UnexpectedValueException(
                         sprintf(
