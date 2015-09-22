@@ -65,10 +65,11 @@ class Simplate
                 }
 
                 // get expression contents
-                $expression = trim(substr($content, $idx + 10, $endIdx));
+                $expression = trim(substr($content, $idx + 10, $endIdx - $idx - 10));
 
                 // get end_depends position
                 $pos = strpos($content, '{{ end_depends', $endIdx + 2);
+                var_dump($pos);
                 if ($pos < 0) {
                     throw new UnexpectedValueException(
                         sprintf(
@@ -92,7 +93,7 @@ class Simplate
                 $expression = $this->replaceContent($variables, $expression);
 
                 // if expression evals to true then show section, else hide
-                if (eval("return ($expression) === true;")) {
+                if ($this->evalExpression($variables, $expression)) {
                     $content = substr($content, 0, $idx)
                         . substr($content, $endIdx + 2, $pos)
                         . substr($content, $endPos);
@@ -101,8 +102,14 @@ class Simplate
                         . substr($content, $endPos);
                 }
             }
-        } while ($idx !== -1);
+        } while ($idx !== false);
 
         return $content;
+    }
+
+    private function evalExpression(array $variables, $expression)
+    {
+        extract($variables);
+        return eval("return ($expression) === true;");
     }
 }
