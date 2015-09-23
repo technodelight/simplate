@@ -68,7 +68,6 @@ class Simplate
                 $expression = trim(substr($content, $idx + 10, $endIdx - $idx - 10));
 
                 // get end_depends position
-                // buggy
                 $pos = strpos($content, '{{ end_depends', $endIdx + 2);
                 if ($pos < 0) {
                     throw new UnexpectedValueException(
@@ -95,7 +94,7 @@ class Simplate
                 // if expression evals to true then show section, else hide
                 if ($this->evalExpression($variables, $expression)) {
                     $content = substr($content, 0, $idx)
-                        . substr($content, $endIdx + 2, $pos)
+                        . substr($content, $endIdx + 2, $endPos - $pos - 9)
                         . substr($content, $endPos);
                 } else {
                     $content = substr($content, 0, $idx)
