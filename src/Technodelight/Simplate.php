@@ -45,63 +45,53 @@ class Simplate
 
     private function hideDepends(array $variables, $content)
     {
-        $idx = 0;
-        $endIdx = 0;
-        $pos = 0;
-        $endPos = 0;
+        $startDepends = 0;
+        $closeDepends = 0;
+        $endDepends = 0;
 
         do {
-            $idx = strpos($content, '{{ depends');
-            if ($idx !== false) {
-                $endIdx = strpos($content, '}}', $idx);
+            $startDepends = strpos($content, '{{ depends');
+            if ($startDepends !== false) {
+                $closeDepends = strpos($content, '}}', $startDepends);
 
-                if ($endIdx < 0) {
+                if ($closeDepends === false) {
                     throw new UnexpectedValueException(
                         sprintf(
                             "A 'depends' tag misses the double curly braces closing at %d",
-                            $idx
+                            $startDepends
                         )
                     );
                 }
 
                 // get expression contents
-                $expression = trim(substr($content, $idx + 10, $endIdx - $idx - 10));
+                $expression = $this->slice(
+                    $content,
+                    $startDepends + strlen('{{ depends'),
+                    $closeDepends
+                );
 
                 // get end_depends position
-                $pos = strpos($content, '{{ end_depends', $endIdx + 2);
-                if ($pos < 0) {
+                $endDepends = strpos($content, '{{ end_depends }}', $closeDepends + 2);
+                if ($endDepends === false) {
                     throw new UnexpectedValueException(
                         sprintf(
                             "No 'end_depends' found for 'depends' tag started from char %d",
-                            $idx
+                            $startDepends
                         )
                     );
                 }
-
-                $endPos = strpos($content, '}}', $pos);
-                if ($endPos < 0) {
-                    throw new UnexpectedValueException(
-                        sprintf(
-                            "An 'end_depends' tag misses the double curly braces closing at %d",
-                            $pos
-                        )
-                    );
-                }
-                $endPos += 2;
-
-                $expression = $this->replaceContent($variables, $expression);
 
                 // if expression evals to true then show section, else hide
                 if ($this->evalExpression($variables, $expression)) {
-                    $content = substr($content, 0, $idx)
-                        . substr($content, $endIdx + 2, $endPos - $pos - 9)
-                        . substr($content, $endPos);
+                    $content = $this->slice($content, 0, $startDepends)
+                        . $this->slice($content, $closeDepends + 2, $endDepends)
+                        . $this->slice($content, $endDepends + strlen('{{ end_depends }}'), strlen($content));
                 } else {
-                    $content = substr($content, 0, $idx)
-                        . substr($content, $endPos);
+                    $content = $this->slice($content, 0, $startDepends)
+                        . $this->slice($content, $endDepends + strlen('{{ end_depends }}'), strlen($content));
                 }
             }
-        } while ($idx !== false);
+        } while ($startDepends !== false);
 
         return $content;
     }
@@ -110,5 +100,10 @@ class Simplate
     {
         extract($variables);
         return eval("return ($expression) === true;");
+    }
+
+    private function slice($text, $start, $end)
+    {
+        return substr($text, $start, $end - $start);
     }
 }
